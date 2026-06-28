@@ -1,4 +1,4 @@
-# manualop — global-metadata.dat extraction toolkit
+# UMAT — global-metadata.dat extraction toolkit
 
 *[English](#english) · [简体中文](#简体中文)*
 
