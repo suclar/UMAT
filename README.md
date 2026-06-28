@@ -6,29 +6,18 @@
 
 ## English
 
-Tools for recovering the embedded, XOR-obfuscated **`global-metadata.dat`** from
-certain horse girl game's ARM64 il2cpp library (`libil2cpp.so`).
+Tools for recovering the embedded, XOR-obfuscated **`global-metadata.dat`** from certain horse girl game's ARM64 il2cpp library (`libil2cpp.so`).
 
 Steam/DMM **`GameAssembly.dll`** support will be added in the future.
 
 ### Background
 
-The library hides `global-metadata.dat` as an encrypted blob at `byte_A2BBBD8`
-(vaddr `0x0A2BBBD8`). A heavily control-flow-obfuscated routine
-`decrypt_and_cache_buffer` (`sub_3DE202C` @ vaddr `0x03DE202C`) decrypts it in
-place on first call and caches the result pointer in `qword_CAAB5A8`
-(vaddr `0x0CAAB5A8`).
+The library hides `global-metadata.dat` as an encrypted blob at `byte_A2BBBD8`(vaddr `0x0A2BBBD8`). A heavily control-flow-obfuscated routine `decrypt_and_cache_buffer` (`sub_3DE202C` @ vaddr `0x03DE202C`) decrypts it in place on first call and caches the result pointer in `qword_CAAB5A8` (vaddr `0x0CAAB5A8`).
 
-Because the decryptor branches on the *encrypted* bytes themselves, the
-algorithm cannot be safely re-implemented by hand. Instead these tools map the
-ELF image into a **Unicorn (QEMU) ARM64 CPU** and execute the routine verbatim,
-then read the now-decrypted blob back out.
+Because the decryptor branches on the *encrypted* bytes themselves, the algorithm cannot be safely re-implemented by hand. Instead these tools map the ELF image into a **Unicorn (QEMU) ARM64 CPU** and execute the routine verbatim, then read the now-decrypted blob back out.
 
-The game additionally scrambles the metadata header's `sanity` (offset `+0`)
-and `version` (offset `+4`) fields, while leaving the table of `(offset, size)`
-section pairs intact. The scripts restore the standard header
-(`sanity = 0xFAB11BAF`, `version = 31`) so that vanilla
-**Il2CppDumper** / **Il2CppInspector** accept the output file.
+The game additionally scrambles the metadata header's `sanity` (offset `+0`) and `version` (offset `+4`) fields, while leaving the table of `(offset, size)`
+section pairs intact. The scripts restore the standard header (`sanity = 0xFAB11BAF`, `version = 31`) so that vanilla **Il2CppDumper** / **Il2CppInspector** accept the output file.
 
 ### Files
 
@@ -80,18 +69,9 @@ python analyze_meta.py
 
 ### How version auto-detection works
 
-1. **Header geometry** — `stringLiteralOffset` (the first pair's offset) equals
-   the header byte-size, which yields the pair count and therefore a *family* of
-   versions (the 31-pair header covers v27/v29/v31).
-2. **Structure sizes** — versions within a family share an identical header, so
-   the version is disambiguated from structure byte-sizes recovered as
-   `section_size % elem_size == 0`. The decisive v29-vs-v31 split is
-   `Il2CppMethodDefinition`, which gained `returnParameterToken` in v31:
-   v27/v29 → `0x20` (32 bytes), v31 → `0x24` (36 bytes). The game currently(2026-06-28) resolves to
-   **v31**.
+1. **Header geometry** — `stringLiteralOffset` (the first pair's offset) equals the header byte-size, which yields the pair count and therefore a *family* of versions (the 31-pair header covers v27/v29/v31).
+2. **Structure sizes** — versions within a family share an identical header, so the version is disambiguated from structure byte-sizes recovered as `section_size % elem_size == 0`. The decisive v29-vs-v31 split is `Il2CppMethodDefinition`, which gained `returnParameterToken` in v31: v27/v29 → `0x20` (32 bytes), v31 → `0x24` (36 bytes). The game currently(2026-06-28) resolves to **v31**.
 
-> Note: `Il2CppTypeDefinition` is `0x58` for all of v27/v29/v31, so it only
-> confirms the family — it cannot distinguish the version on its own.
 
 ### Key addresses
 
@@ -107,27 +87,18 @@ Decrypted size = `0x027C2C1C` = 41,692,188 bytes.
 
 ## 简体中文
 
-用于从某个赛马拟人游戏的 ARM64 il2cpp 库（`libil2cpp.so`）中还原内嵌、
-经XOR 混淆的 **`global-metadata.dat`** 的工具集。
+用于从某个赛马拟人游戏的 ARM64 il2cpp 库（`libil2cpp.so`）中还原内嵌、经XOR 混淆的 **`global-metadata.dat`** 的工具集。
 
 Steam 与 DMM 版本支持将后续更新
 ### 背景
 
-Powered by Claude OPUS 4.8
+作者非常懒，以至于使用了Claude OPUS 4.8进行辅助分析。新版本的时候你也得自己搜地址。
 
-该库将 `global-metadata.dat` 以加密 blob 的形式藏在 `byte_A2BBBD8`
-（虚拟地址 `0x0A2BBBD8`）。一个控制流被大量混淆的函数
-`decrypt_and_cache_buffer`（`sub_3DE202C` @ 虚拟地址 `0x03DE202C`）会在首次调用时
-就地解密，并把结果指针缓存到 `qword_CAAB5A8`（虚拟地址 `0x0CAAB5A8`）。
+该库将 `global-metadata.dat` 以加密 blob 的形式藏在 `byte_A2BBBD8`（虚拟地址 `0x0A2BBBD8`）。一个控制流被大量混淆的函数`decrypt_and_cache_buffer`（`sub_3DE202C` @ 虚拟地址 `0x03DE202C`）会在首次调用时就地解密，并把结果指针缓存到 `qword_CAAB5A8`（虚拟地址 `0x0CAAB5A8`）。
 
-由于解密函数的分支依赖于*加密后的字节*本身，该算法无法安全地手工重写。因此这些
-工具会把 ELF 镜像映射进 **Unicorn（QEMU）ARM64 CPU** 并原样执行该函数，再把解密
-完成的 blob 读出来。
+由于解密函数的分支依赖于*加密后的字节*本身，该算法无法安全地手工重写。因此这些工具会把 ELF 镜像映射进 **Unicorn（QEMU）ARM64 CPU** 并原样执行该函数，再把解密完成的 blob 读出来。
 
-某游戏还额外打乱了元数据头部的 `sanity`（偏移 `+0`）和 `version`（偏移 `+4`）字
-段，但保留了 `(offset, size)` 段表的完整性。脚本会恢复标准头部
-（`sanity = 0xFAB11BAF`、`version = 31`），使原版的 **Il2CppDumper** /
-**Il2CppInspector** 能够接受输出文件。
+某游戏还额外打乱了元数据头部的 `sanity`（偏移 `+0`）和 `version`（偏移 `+4`）字段，但保留了 `(offset, size)` 段表的完整性。脚本会恢复标准头部（`sanity = 0xFAB11BAF`、`version = 31`），使原版的 **Il2CppDumper** /**Il2CppInspector** 能够接受输出文件。
 
 ### 文件说明
 
@@ -179,17 +150,8 @@ python analyze_meta.py
 
 ### 版本自动识别原理
 
-1. **头部几何结构** —— `stringLiteralOffset`（第一组对的 offset）等于头部的字节
-   大小，由此得到对的数量，进而确定一个版本*家族*（31 组对的头部涵盖
-   v27/v29/v31）。
-2. **结构体大小** —— 同一家族内的版本共用相同头部，因此通过
-   `section_size % elem_size == 0` 还原出的结构体字节大小来区分版本。区分
-   v29 与 v31 的决定性依据是 `Il2CppMethodDefinition`，它在 v31 新增了
-   `returnParameterToken`：v27/v29 → `0x20`（32 字节），v31 → `0x24`（36 字节）。
-   当前版本(2026-06-28)应判定为 **v31**。
-
-> 注意：`Il2CppTypeDefinition` 在 v27/v29/v31 中都是 `0x58`，因此它只能确认家族，
-> 无法单独区分版本。
+1. **头部几何结构** —— `stringLiteralOffset`（第一组对的 offset）等于头部的字节大小，由此得到对的数量，进而确定一个版本*家族*（31 组对的头部涵盖v27/v29/v31）。
+2. **结构体大小** —— 同一家族内的版本共用相同头部，因此通过`section_size % elem_size == 0` 还原出的结构体字节大小来区分版本。区分v29 与 v31 的决定性依据是 `Il2CppMethodDefinition`，它在 v31 新增了`returnParameterToken`：v27/v29 → `0x20`（32 字节），v31 → `0x24`（36 字节）。当前版本(2026-06-28)应判定为 **v31**。
 
 ### 关键地址（libil2cpp.so）
 
