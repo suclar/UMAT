@@ -1,0 +1,8 @@
+
+# Install with:  pip install -r requirements.txt
+#
+# Note: ida_extract_metadata.py also imports idaapi/idc/ida_segment, which are
+# provided by IDA's bundled Python and are NOT available from PyPI.
+
+unicorn==2.1.4   # ARM64 CPU emulation (emulate_extract.py, ida_extract_metadata.py)
+capstone==5.0.9  # ARM64 disassembly (probe.py)
